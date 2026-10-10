@@ -29,8 +29,8 @@ import dev.engine_room.flywheel.backend.glsl.SourceComponent;
 import dev.engine_room.flywheel.backend.glsl.generate.FnSignature;
 import dev.engine_room.flywheel.backend.glsl.generate.GlslExpr;
 import dev.engine_room.flywheel.lib.material.CutoutShaders;
-import dev.engine_room.flywheel.lib.util.ResourceUtil;
-import net.minecraft.resources.ResourceLocation;
+import dev.engine_room.flywheel.lib.util.IdentifierUtil;
+import net.minecraft.resources.Identifier;
 
 public final class PipelineCompiler {
 	private static final Set<PipelineCompiler> ALL = Collections.newSetFromMap(new WeakHashMap<>());
@@ -40,8 +40,8 @@ public final class PipelineCompiler {
 	private static UberShaderComponent FOG;
 	private static UberShaderComponent CUTOUT;
 
-	private static final ResourceLocation API_IMPL_VERT = ResourceUtil.rl("internal/api_impl.vert");
-	private static final ResourceLocation API_IMPL_FRAG = ResourceUtil.rl("internal/api_impl.frag");
+	private static final Identifier API_IMPL_VERT = IdentifierUtil.id("internal/api_impl.vert");
+	private static final Identifier API_IMPL_FRAG = IdentifierUtil.id("internal/api_impl.frag");
 
 	private final CompilationHarness<PipelineProgramKey> harness;
 
@@ -85,10 +85,10 @@ public final class PipelineCompiler {
 		var harness = PIPELINE.program()
 				.link(PIPELINE.shader(GlCompat.MAX_GLSL_VERSION, ShaderType.VERTEX)
 						.nameMapper(key -> {
-							var instance = ResourceUtil.toDebugFileNameNoExtension(key.instanceType()
+							var instance = IdentifierUtil.toDebugFileNameNoExtension(key.instanceType()
 									.vertexShader());
 
-							var material = ResourceUtil.toDebugFileNameNoExtension(key.materialShaders()
+							var material = IdentifierUtil.toDebugFileNameNoExtension(key.materialShaders()
 									.vertexSource());
 							var context = key.contextShader()
 									.nameLowerCase();
@@ -127,10 +127,10 @@ public final class PipelineCompiler {
 							var context = key.contextShader()
 									.nameLowerCase();
 
-							var material = ResourceUtil.toDebugFileNameNoExtension(key.materialShaders()
+							var material = IdentifierUtil.toDebugFileNameNoExtension(key.materialShaders()
 									.fragmentSource());
 
-							var light = ResourceUtil.toDebugFileNameNoExtension(key.light()
+							var light = IdentifierUtil.toDebugFileNameNoExtension(key.light()
 									.source());
 							var debug = key.debugEnabled() ? "_debug" : "";
 							var cutout = key.useCutout() ? "_cutout" : "";
@@ -181,6 +181,20 @@ public final class PipelineCompiler {
 					program.bindAttribLocation("_flw_aOverlay", 3);
 					program.bindAttribLocation("_flw_aLight", 4);
 					program.bindAttribLocation("_flw_aNormal", 5);
+
+					// Explicitly bind the fragment outputs to the color attachment slots the
+					// OitFramebuffer draw buffers expect. Each OIT pass only declares one of these
+					// output groups (guarded by #ifdefs), and binding a name that isn't present is a
+					// no-op, so binding them all unconditionally is safe. Apple's GL driver assigns
+					// implicit output locations in an order that doesn't match declaration order,
+					// which scrambles the coefficient targets and makes OIT geometry invisible.
+					program.bindFragDataLocation("_flw_outputColor", 0);
+					program.bindFragDataLocation("_flw_depthRange_out", 0);
+					program.bindFragDataLocation("_flw_coeffs0", 0);
+					program.bindFragDataLocation("_flw_coeffs1", 1);
+					program.bindFragDataLocation("_flw_coeffs2", 2);
+					program.bindFragDataLocation("_flw_coeffs3", 3);
+					program.bindFragDataLocation("_flw_accumulate", 0);
 				})
 				.postLink((key, program) -> {
 					Uniforms.setUniformBlockBindings(program);
@@ -206,7 +220,7 @@ public final class PipelineCompiler {
 	}
 
 	public static void createFogComponent() {
-		FOG = UberShaderComponent.builder(ResourceUtil.rl("fog"))
+		FOG = UberShaderComponent.builder(IdentifierUtil.id("fog"))
 				.materialSources(MaterialShaderIndices.fogSources()
 						.all())
 				.adapt(FnSignature.create()
@@ -219,7 +233,7 @@ public final class PipelineCompiler {
 	}
 
 	private static void createCutoutComponent() {
-		CUTOUT = UberShaderComponent.builder(ResourceUtil.rl("cutout"))
+		CUTOUT = UberShaderComponent.builder(IdentifierUtil.id("cutout"))
 				.materialSources(MaterialShaderIndices.cutoutSources()
 						.all())
 				.adapt(FnSignature.create()
