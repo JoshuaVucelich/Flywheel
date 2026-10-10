@@ -26,24 +26,12 @@ class TransformingVertexConsumer implements VertexConsumer {
 	}
 
 	@Override
-	public VertexConsumer setLineWidth(float width) {
-		delegate.setLineWidth(width);
-		return this;
-	}
-
-	@Override
 	public VertexConsumer addVertex(float x, float y, float z) {
 		Matrix4f matrix = poseStack.last().pose();
 		delegate.addVertex(
 				MatrixMath.transformPositionX(matrix, x, y, z),
 				MatrixMath.transformPositionY(matrix, x, y, z),
 				MatrixMath.transformPositionZ(matrix, x, y, z));
-		return this;
-	}
-
-	@Override
-	public VertexConsumer setColor(int color) {
-		delegate.setColor(color);
 		return this;
 	}
 

@@ -13,7 +13,7 @@ import org.lwjgl.system.Checks;
 
 import dev.engine_room.flywheel.backend.gl.GlCompat;
 import dev.engine_room.flywheel.backend.gl.buffer.GlBufferType;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 
 public abstract class GlVertexArrayGL3 extends GlVertexArray {
 	private final BitSet attributeDirty = new BitSet(MAX_ATTRIBS);

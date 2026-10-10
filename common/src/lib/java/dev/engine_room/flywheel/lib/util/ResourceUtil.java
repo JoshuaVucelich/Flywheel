@@ -5,9 +5,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 
 import dev.engine_room.flywheel.api.Flywheel;
-import net.minecraft.IdentifierException;
+import net.minecraft.ResourceLocationException;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public final class ResourceUtil {
 	private static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("argument.id.invalid"));
@@ -15,18 +15,18 @@ public final class ResourceUtil {
 	private ResourceUtil() {
 	}
 
-	public static Identifier rl(String path) {
-		return Identifier.fromNamespaceAndPath(Flywheel.ID, path);
+	public static ResourceLocation rl(String path) {
+		return ResourceLocation.fromNamespaceAndPath(Flywheel.ID, path);
 	}
 
 	/**
-	 * Same as {@link Identifier#parse(String)}, but defaults to Flywheel namespace.
+	 * Same as {@link ResourceLocation#parse(String)}, but defaults to Flywheel namespace.
 	 */
-	public static Identifier parseFlywheelDefault(String location) {
+	public static ResourceLocation parseFlywheelDefault(String location) {
 		String namespace = Flywheel.ID;
 		String path = location;
 
-		int i = location.indexOf(Identifier.NAMESPACE_SEPARATOR);
+		int i = location.indexOf(ResourceLocation.NAMESPACE_SEPARATOR);
 		if (i >= 0) {
 			path = location.substring(i + 1);
 			if (i >= 1) {
@@ -34,16 +34,16 @@ public final class ResourceUtil {
 			}
 		}
 
-		return Identifier.fromNamespaceAndPath(namespace, path);
+		return ResourceLocation.fromNamespaceAndPath(namespace, path);
 	}
 
 	/**
-	 * Same as {@link Identifier#read(StringReader)}, but defaults to Flywheel namespace.
+	 * Same as {@link ResourceLocation#read(StringReader)}, but defaults to Flywheel namespace.
 	 */
-	public static Identifier readFlywheelDefault(StringReader reader) throws CommandSyntaxException {
+	public static ResourceLocation readFlywheelDefault(StringReader reader) throws CommandSyntaxException {
 		int i = reader.getCursor();
 
-		while (reader.canRead() && Identifier.isAllowedInIdentifier(reader.peek())) {
+		while (reader.canRead() && ResourceLocation.isAllowedInResourceLocation(reader.peek())) {
 		   reader.skip();
 		}
 
@@ -51,16 +51,16 @@ public final class ResourceUtil {
 
 		try {
 		   return parseFlywheelDefault(s);
-		} catch (IdentifierException resourcelocationexception) {
+		} catch (ResourceLocationException resourcelocationexception) {
 		   reader.setCursor(i);
 		   throw ERROR_INVALID.createWithContext(reader);
 		}
 	}
 
 	/**
-	 * Same as {@link Identifier#toDebugFileName()}, but also removes the file extension.
+	 * Same as {@link ResourceLocation#toDebugFileName()}, but also removes the file extension.
 	 */
-	public static String toDebugFileNameNoExtension(Identifier resourceLocation) {
+	public static String toDebugFileNameNoExtension(ResourceLocation resourceLocation) {
 		var stringLoc = resourceLocation.toDebugFileName();
 		return stringLoc.substring(0, stringLoc.lastIndexOf('.'));
 	}

@@ -7,7 +7,7 @@ import dev.engine_room.flywheel.impl.visualization.VisualizationManagerImpl;
 import dev.engine_room.flywheel.lib.backend.SimpleBackend;
 import dev.engine_room.flywheel.lib.util.ResourceUtil;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public final class BackendManagerImpl {
 	public static final Backend OFF_BACKEND = SimpleBackend.builder()
@@ -75,7 +75,7 @@ public final class BackendManagerImpl {
 	}
 
 	public static String getBackendString() {
-		Identifier backendId = Backend.REGISTRY.getId(backend);
+		ResourceLocation backendId = Backend.REGISTRY.getId(backend);
 		if (backendId == null) {
 			return "[unregistered]";
 		}

@@ -1,10 +1,8 @@
 package dev.engine_room.flywheel.backend.gl;
 
-import static org.lwjgl.opengl.GL13.GL_ACTIVE_TEXTURE;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glGetInteger;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
+import com.mojang.blaze3d.platform.GlStateManager;
 
 public enum GlTextureUnit {
 	T0(0),
@@ -55,7 +53,7 @@ public enum GlTextureUnit {
 	}
 
 	public static GlTextureUnit getActive() {
-		return fromGlEnum(glGetInteger(GL_ACTIVE_TEXTURE));
+		return fromGlEnum(GlStateManager._getActiveTexture());
 	}
 
 	public static GlTextureUnit fromGlEnum(int glEnum) {

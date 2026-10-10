@@ -42,7 +42,7 @@ public class EntityVisibilityTester {
 	 * @return {@code true} if the Entity is visible, {@code false} otherwise.
 	 */
 	public boolean check(FrustumIntersection frustum) {
-		AABB aabb = entity.getBoundingBox();
+		AABB aabb = entity.getBoundingBoxForCulling();
 
 		// If we've never seen the entity before assume its visible.
 		// Fixes entities freezing when they first spawn.

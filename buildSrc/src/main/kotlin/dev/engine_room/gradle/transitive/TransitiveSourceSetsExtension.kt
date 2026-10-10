@@ -32,11 +32,10 @@ open class TransitiveSourceSetsExtension(val project: Project) {
         }
 
         transitives.forEach { (sourceSet, configurator) ->
-            val config = configs.getValue(sourceSet)
             project.configurations.named(sourceSet.compileOnlyConfigurationName).configure {
-                extendsFrom(config)
+                extendsFrom(configs[sourceSet])
                 configurator.compileSourceSets.forEach {
-                    extendsFrom(configs.getValue(it))
+                    extendsFrom(configs[it])
                 }
             }
         }
@@ -51,11 +50,10 @@ open class TransitiveSourceSetsExtension(val project: Project) {
         }
 
         transitives.forEach { (sourceSet, configurator) ->
-            val config = configs.getValue(sourceSet)
             project.configurations.named(sourceSet.runtimeOnlyConfigurationName).configure {
-                extendsFrom(config)
+                extendsFrom(configs[sourceSet])
                 configurator.runtimeSourceSets.forEach {
-                    extendsFrom(configs.getValue(it))
+                    extendsFrom(configs[it])
                 }
             }
         }

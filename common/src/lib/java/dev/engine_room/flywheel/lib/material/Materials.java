@@ -5,12 +5,9 @@ import dev.engine_room.flywheel.api.material.DepthTest;
 import dev.engine_room.flywheel.api.material.Material;
 import dev.engine_room.flywheel.api.material.Transparency;
 import dev.engine_room.flywheel.api.material.WriteMask;
-import net.minecraft.resources.Identifier;
+import net.minecraft.client.renderer.entity.ItemRenderer;
 
 public final class Materials {
-	private static final Identifier ENCHANTED_GLINT_ITEM = Identifier.withDefaultNamespace("textures/misc/enchanted_glint_item.png");
-	private static final Identifier ENCHANTED_GLINT_ENTITY = Identifier.withDefaultNamespace("textures/misc/enchanted_glint_armor.png");
-
 	public static final Material SOLID_BLOCK = SimpleMaterial.builder()
 			.build();
 	public static final Material SOLID_UNSHADED_BLOCK = SimpleMaterial.builderOf(SOLID_BLOCK)
@@ -48,7 +45,7 @@ public final class Materials {
 			.build();
 
 	public static final Material GLINT = SimpleMaterial.builder()
-			.texture(ENCHANTED_GLINT_ITEM)
+			.texture(ItemRenderer.ENCHANTED_GLINT_ITEM)
 			.shaders(StandardMaterialShaders.GLINT)
 			.transparency(Transparency.GLINT)
 			.writeMask(WriteMask.COLOR)
@@ -59,7 +56,7 @@ public final class Materials {
 			.build();
 
 	public static final Material GLINT_ENTITY = SimpleMaterial.builderOf(GLINT)
-			.texture(ENCHANTED_GLINT_ENTITY)
+			.texture(ItemRenderer.ENCHANTED_GLINT_ENTITY)
 			.build();
 
 	public static final Material TRANSLUCENT_ENTITY = SimpleMaterial.builder()

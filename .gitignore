@@ -66,4 +66,3 @@ docs/*.local
 mcmodsrepo
 src/*/generatedPackageInfos/
 */src/*/generatedPackageInfos/
-._*

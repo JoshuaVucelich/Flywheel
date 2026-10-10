@@ -10,7 +10,7 @@ import dev.engine_room.flywheel.api.backend.RenderContext;
 import dev.engine_room.flywheel.api.visualization.VisualizationManager;
 import dev.engine_room.flywheel.backend.engine.indirect.DepthPyramid;
 import dev.engine_room.flywheel.backend.mixin.LevelRendererAccessor;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -69,7 +69,7 @@ public final class FrameUniforms extends UniformWriter {
 		Vec3i renderOrigin = VisualizationManager.getOrThrow(context.level())
 				.renderOrigin();
 		var camera = context.camera();
-		Vec3 cameraPos = camera.position();
+		Vec3 cameraPos = camera.getPosition();
 		var camX = (float) (cameraPos.x - renderOrigin.getX());
 		var camY = (float) (cameraPos.y - renderOrigin.getY());
 		var camZ = (float) (cameraPos.z - renderOrigin.getZ());
@@ -81,8 +81,8 @@ public final class FrameUniforms extends UniformWriter {
 		VIEW_PROJECTION.translate(-camX, -camY, -camZ);
 
 		CAMERA_POS.set(camX, camY, camZ);
-		CAMERA_LOOK.set(camera.forwardVector());
-		CAMERA_ROT.set(camera.xRot(), camera.yRot());
+		CAMERA_LOOK.set(camera.getLookVector());
+		CAMERA_ROT.set(camera.getXRot(), camera.getYRot());
 
 		if (firstWrite) {
 			setPrev();
@@ -109,7 +109,7 @@ public final class FrameUniforms extends UniformWriter {
 		ptr = writeFloat(ptr, (float) window.getWidth() / (float) window.getHeight());
 		// default line width: net.minecraft.client.renderer.RenderStateShard.LineStateShard
 		ptr = writeFloat(ptr, Math.max(2.5F, (float) window.getWidth() / 1920.0F * 2.5F));
-		ptr = writeFloat(ptr, depthFar());
+		ptr = writeFloat(ptr, Minecraft.getInstance().gameRenderer.getDepthFar());
 
 		ptr = writeTime(ptr, context);
 
@@ -185,9 +185,9 @@ public final class FrameUniforms extends UniformWriter {
 			return ptr;
 		}
 
-		Level level = camera.entity().level();
-		BlockPos blockPos = camera.blockPosition();
-		Vec3 cameraPos = camera.position();
+		Level level = camera.getEntity().level();
+		BlockPos blockPos = camera.getBlockPosition();
+		Vec3 cameraPos = camera.getPosition();
 		return writeInFluidAndBlock(ptr, level, blockPos, cameraPos);
 	}
 
@@ -199,8 +199,8 @@ public final class FrameUniforms extends UniformWriter {
 		int pyramidHeight = DepthPyramid.mip0Size(mainRenderTarget.height);
 		int pyramidDepth = DepthPyramid.getImageMipLevels(pyramidWidth, pyramidHeight);
 
-		ptr = writeFloat(ptr, Camera.PROJECTION_Z_NEAR); // zNear
-		ptr = writeFloat(ptr, depthFar()); // zFar
+		ptr = writeFloat(ptr, GameRenderer.PROJECTION_Z_NEAR); // zNear
+		ptr = writeFloat(ptr, mc.gameRenderer.getDepthFar()); // zFar
 		ptr = writeFloat(ptr, PROJECTION.m00()); // P00
 		ptr = writeFloat(ptr, PROJECTION.m11()); // P11
 		ptr = writeFloat(ptr, pyramidWidth); // pyramidWidth
@@ -323,10 +323,6 @@ public final class FrameUniforms extends UniformWriter {
 		MemoryUtil.memPutFloat(ptr + 84, pzZ);
 		MemoryUtil.memPutFloat(ptr + 88, nzW);
 		MemoryUtil.memPutFloat(ptr + 92, pzW);
-	}
-
-	private static float depthFar() {
-		return Minecraft.getInstance().gameRenderer.getGameRenderState().levelRenderState.cameraRenderState.depthFar;
 	}
 
 	public static boolean debugOn() {

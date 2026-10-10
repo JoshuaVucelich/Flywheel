@@ -4,10 +4,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 @Mixin(ItemOverrides.class)
 public interface ItemOverridesAccessor {
 	@Accessor("properties")
-	Identifier[] vanillin$properties();
+	ResourceLocation[] vanillin$properties();
 }

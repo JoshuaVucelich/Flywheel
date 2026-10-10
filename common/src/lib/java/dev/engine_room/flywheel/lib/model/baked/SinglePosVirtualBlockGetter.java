@@ -67,7 +67,7 @@ public class SinglePosVirtualBlockGetter extends VirtualBlockGetter {
 	}
 
 	@Override
-	public int getMinY() {
+	public int getMinBuildHeight() {
 		return pos.getY();
 	}
 }

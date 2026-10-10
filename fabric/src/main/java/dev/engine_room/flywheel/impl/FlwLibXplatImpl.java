@@ -9,12 +9,12 @@ import dev.engine_room.flywheel.lib.model.baked.BlockModelBuilder;
 import dev.engine_room.flywheel.lib.model.baked.ModelBuilderImpl;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class FlwLibXplatImpl implements FlwLibXplat {
 	@Override
 	@UnknownNullability
-	public BakedModel getBakedModel(ModelManager modelManager, Identifier location) {
+	public BakedModel getBakedModel(ModelManager modelManager, ResourceLocation location) {
 		return modelManager.getModel(location);
 	}
 

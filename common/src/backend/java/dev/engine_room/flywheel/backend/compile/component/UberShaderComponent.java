@@ -19,22 +19,22 @@ import dev.engine_room.flywheel.backend.glsl.generate.GlslBuilder;
 import dev.engine_room.flywheel.backend.glsl.generate.GlslExpr;
 import dev.engine_room.flywheel.backend.glsl.generate.GlslSwitch;
 import dev.engine_room.flywheel.lib.util.ResourceUtil;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class UberShaderComponent implements SourceComponent {
-	private final Identifier name;
+	private final ResourceLocation name;
 	private final GlslExpr switchArg;
 	private final List<AdaptedFn> functionsToAdapt;
 	private final List<StringSubstitutionComponent> adaptedComponents;
 
-	private UberShaderComponent(Identifier name, GlslExpr switchArg, List<AdaptedFn> functionsToAdapt, List<StringSubstitutionComponent> adaptedComponents) {
+	private UberShaderComponent(ResourceLocation name, GlslExpr switchArg, List<AdaptedFn> functionsToAdapt, List<StringSubstitutionComponent> adaptedComponents) {
 		this.name = name;
 		this.switchArg = switchArg;
 		this.functionsToAdapt = functionsToAdapt;
 		this.adaptedComponents = adaptedComponents;
 	}
 
-	public static Builder builder(Identifier name) {
+	public static Builder builder(ResourceLocation name) {
 		return new Builder(name);
 	}
 
@@ -106,17 +106,17 @@ public class UberShaderComponent implements SourceComponent {
 	}
 
 	public static class Builder {
-		private final Identifier name;
-		private final List<Identifier> materialSources = new ArrayList<>();
+		private final ResourceLocation name;
+		private final List<ResourceLocation> materialSources = new ArrayList<>();
 		private final List<AdaptedFn> adaptedFunctions = new ArrayList<>();
 		@Nullable
 		private GlslExpr switchArg;
 
-		public Builder(Identifier name) {
+		public Builder(ResourceLocation name) {
 			this.name = name;
 		}
 
-		public Builder materialSources(List<Identifier> sources) {
+		public Builder materialSources(List<ResourceLocation> sources) {
 			this.materialSources.addAll(sources);
 			return this;
 		}

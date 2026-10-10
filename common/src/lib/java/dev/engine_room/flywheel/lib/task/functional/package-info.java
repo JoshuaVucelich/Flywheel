@@ -6,6 +6,11 @@
  * the context object.
  */
 @ParametersAreNonnullByDefault
+@FieldsAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 package dev.engine_room.flywheel.lib.task.functional;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+
+import net.minecraft.FieldsAreNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;

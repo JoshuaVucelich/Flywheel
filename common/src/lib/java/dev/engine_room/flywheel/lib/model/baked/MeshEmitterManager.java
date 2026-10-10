@@ -13,25 +13,25 @@ import dev.engine_room.flywheel.api.model.Model;
 import dev.engine_room.flywheel.lib.model.SimpleModel;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.RenderType;
 
 class MeshEmitterManager<T extends MeshEmitter> {
-	private static final ChunkSectionLayer[] CHUNK_LAYERS = ChunkSectionLayer.values();
+	private static final RenderType[] CHUNK_LAYERS = RenderType.chunkBufferLayers().toArray(RenderType[]::new);
 
-	private final Reference2ReferenceMap<ChunkSectionLayer, T> emitterMap = new Reference2ReferenceArrayMap<>();
+	private final Reference2ReferenceMap<RenderType, T> emitterMap = new Reference2ReferenceArrayMap<>();
 	private final ByteBufferBuilderStack byteBufferBuilderStack = new ByteBufferBuilderStack();
 
 	@UnknownNullability
 	private BlockMaterialFunction blockMaterialFunction;
 
-	MeshEmitterManager(BiFunction<ByteBufferBuilderStack, ChunkSectionLayer, T> meshEmitterFactory) {
-		for (ChunkSectionLayer layer : CHUNK_LAYERS) {
-			emitterMap.put(layer, meshEmitterFactory.apply(byteBufferBuilderStack, layer));
+	MeshEmitterManager(BiFunction<ByteBufferBuilderStack, RenderType, T> meshEmitterFactory) {
+		for (RenderType renderType : CHUNK_LAYERS) {
+			emitterMap.put(renderType, meshEmitterFactory.apply(byteBufferBuilderStack, renderType));
 		}
 	}
 
-	public T getEmitter(ChunkSectionLayer layer) {
-		return emitterMap.get(layer);
+	public T getEmitter(RenderType renderType) {
+		return emitterMap.get(renderType);
 	}
 
 	public void prepare(BlockMaterialFunction blockMaterialFunction) {
@@ -62,10 +62,10 @@ class MeshEmitterManager<T extends MeshEmitter> {
 	}
 
 	@Nullable
-	public BufferBuilder getBuffer(ChunkSectionLayer layer, boolean shade, boolean ao) {
-		Material key = blockMaterialFunction.apply(layer, shade, ao);
+	public BufferBuilder getBuffer(RenderType renderType, boolean shade, boolean ao) {
+		Material key = blockMaterialFunction.apply(renderType, shade, ao);
 		if (key != null) {
-			return emitterMap.get(layer).getBuffer(key);
+			return emitterMap.get(renderType).getBuffer(key);
 		} else {
 			return null;
 		}

@@ -5,16 +5,14 @@ import java.util.Comparator;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
-import com.mojang.blaze3d.platform.DestFactor;
-import com.mojang.blaze3d.platform.SourceFactor;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import dev.engine_room.flywheel.api.material.DepthTest;
 import dev.engine_room.flywheel.api.material.Material;
 import dev.engine_room.flywheel.api.material.Transparency;
 import dev.engine_room.flywheel.api.material.WriteMask;
 import dev.engine_room.flywheel.backend.Samplers;
-import dev.engine_room.flywheel.backend.gl.GlRenderCompat;
-import dev.engine_room.flywheel.backend.gl.GpuTextureCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 
@@ -41,7 +39,7 @@ public final class MaterialRenderState {
 
 		WriteMask mask = material.writeMask();
 		boolean writeColor = mask.color();
-		GlRenderCompat.colorMask(writeColor, writeColor, writeColor, writeColor);
+		RenderSystem.colorMask(writeColor, writeColor, writeColor, writeColor);
 	}
 
 	private static void setupTexture(Material material) {
@@ -49,64 +47,66 @@ public final class MaterialRenderState {
 		AbstractTexture texture = Minecraft.getInstance()
 				.getTextureManager()
 				.getTexture(material.texture());
-		GpuTextureCompat.setFilter(texture, material.blur(), material.mipmap());
-		GpuTextureCompat.bind(texture);
+		texture.setFilter(material.blur(), material.mipmap());
+		var textureId = texture.getId();
+		RenderSystem.setShaderTexture(0, textureId);
+		RenderSystem.bindTexture(textureId);
 	}
 
 	private static void setupBackfaceCulling(boolean backfaceCulling) {
 		if (backfaceCulling) {
-			GlRenderCompat.enableCull();
+			RenderSystem.enableCull();
 		} else {
-			GlRenderCompat.disableCull();
+			RenderSystem.disableCull();
 		}
 	}
 
 	private static void setupPolygonOffset(boolean polygonOffset) {
 		if (polygonOffset) {
-			GlRenderCompat.polygonOffset(-1.0F, -10.0F);
-			GlRenderCompat.enablePolygonOffset();
+			RenderSystem.polygonOffset(-1.0F, -10.0F);
+			RenderSystem.enablePolygonOffset();
 		} else {
-			GlRenderCompat.polygonOffset(0.0F, 0.0F);
-			GlRenderCompat.disablePolygonOffset();
+			RenderSystem.polygonOffset(0.0F, 0.0F);
+			RenderSystem.disablePolygonOffset();
 		}
 	}
 
 	private static void setupDepthTest(DepthTest depthTest) {
 		switch (depthTest) {
 		case OFF -> {
-			GlRenderCompat.disableDepthTest();
+			RenderSystem.disableDepthTest();
 		}
 		case NEVER -> {
-			GlRenderCompat.enableDepthTest();
-			GlRenderCompat.depthFunc(GL11.GL_NEVER);
+			RenderSystem.enableDepthTest();
+			RenderSystem.depthFunc(GL11.GL_NEVER);
 		}
 		case LESS -> {
-			GlRenderCompat.enableDepthTest();
-			GlRenderCompat.depthFunc(GL11.GL_LESS);
+			RenderSystem.enableDepthTest();
+			RenderSystem.depthFunc(GL11.GL_LESS);
 		}
 		case EQUAL -> {
-			GlRenderCompat.enableDepthTest();
-			GlRenderCompat.depthFunc(GL11.GL_EQUAL);
+			RenderSystem.enableDepthTest();
+			RenderSystem.depthFunc(GL11.GL_EQUAL);
 		}
 		case LEQUAL -> {
-			GlRenderCompat.enableDepthTest();
-			GlRenderCompat.depthFunc(GL11.GL_LEQUAL);
+			RenderSystem.enableDepthTest();
+			RenderSystem.depthFunc(GL11.GL_LEQUAL);
 		}
 		case GREATER -> {
-			GlRenderCompat.enableDepthTest();
-			GlRenderCompat.depthFunc(GL11.GL_GREATER);
+			RenderSystem.enableDepthTest();
+			RenderSystem.depthFunc(GL11.GL_GREATER);
 		}
 		case NOTEQUAL -> {
-			GlRenderCompat.enableDepthTest();
-			GlRenderCompat.depthFunc(GL11.GL_NOTEQUAL);
+			RenderSystem.enableDepthTest();
+			RenderSystem.depthFunc(GL11.GL_NOTEQUAL);
 		}
 		case GEQUAL -> {
-			GlRenderCompat.enableDepthTest();
-			GlRenderCompat.depthFunc(GL11.GL_GEQUAL);
+			RenderSystem.enableDepthTest();
+			RenderSystem.depthFunc(GL11.GL_GEQUAL);
 		}
 		case ALWAYS -> {
-			GlRenderCompat.enableDepthTest();
-			GlRenderCompat.depthFunc(GL11.GL_ALWAYS);
+			RenderSystem.enableDepthTest();
+			RenderSystem.depthFunc(GL11.GL_ALWAYS);
 		}
 		}
 	}
@@ -114,35 +114,35 @@ public final class MaterialRenderState {
 	private static void setupTransparency(Transparency transparency) {
 		switch (transparency) {
 		case OPAQUE -> {
-			GlRenderCompat.disableBlend();
+			RenderSystem.disableBlend();
 		}
 		case ADDITIVE -> {
-			GlRenderCompat.enableBlend();
-			GlRenderCompat.blendFunc(SourceFactor.ONE, DestFactor.ONE);
+			RenderSystem.enableBlend();
+			RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
 		}
 		case LIGHTNING -> {
-			GlRenderCompat.enableBlend();
-			GlRenderCompat.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE);
+			RenderSystem.enableBlend();
+			RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
 		}
 		case GLINT -> {
-			GlRenderCompat.enableBlend();
-			GlRenderCompat.blendFuncSeparate(SourceFactor.SRC_COLOR, DestFactor.ONE, SourceFactor.ZERO, DestFactor.ONE);
+			RenderSystem.enableBlend();
+			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_COLOR, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
 		}
 		case CRUMBLING -> {
-			GlRenderCompat.enableBlend();
-			GlRenderCompat.blendFuncSeparate(SourceFactor.DST_COLOR, DestFactor.SRC_COLOR, SourceFactor.ONE, DestFactor.ZERO);
+			RenderSystem.enableBlend();
+			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.DST_COLOR, GlStateManager.DestFactor.SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 		}
 		case TRANSLUCENT -> {
-			GlRenderCompat.enableBlend();
-			GlRenderCompat.blendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA);
+			RenderSystem.enableBlend();
+			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 		}
 		}
 	}
 
 	private static void setupWriteMask(WriteMask mask) {
-		GlRenderCompat.depthMask(mask.depth());
+		RenderSystem.depthMask(mask.depth());
 		boolean writeColor = mask.color();
-		GlRenderCompat.colorMask(writeColor, writeColor, writeColor, writeColor);
+		RenderSystem.colorMask(writeColor, writeColor, writeColor, writeColor);
 	}
 
 	public static void reset() {
@@ -156,31 +156,31 @@ public final class MaterialRenderState {
 
 	private static void resetTexture() {
 		Samplers.DIFFUSE.makeActive();
-		GlRenderCompat.bindTexture(0);
+		RenderSystem.setShaderTexture(0, 0);
 	}
 
 	private static void resetBackfaceCulling() {
-		GlRenderCompat.enableCull();
+		RenderSystem.enableCull();
 	}
 
 	private static void resetPolygonOffset() {
-		GlRenderCompat.polygonOffset(0.0F, 0.0F);
-		GlRenderCompat.disablePolygonOffset();
+		RenderSystem.polygonOffset(0.0F, 0.0F);
+		RenderSystem.disablePolygonOffset();
 	}
 
 	private static void resetDepthTest() {
-		GlRenderCompat.disableDepthTest();
-		GlRenderCompat.depthFunc(GL11.GL_LEQUAL);
+		RenderSystem.disableDepthTest();
+		RenderSystem.depthFunc(GL11.GL_LEQUAL);
 	}
 
 	private static void resetTransparency() {
-		GlRenderCompat.disableBlend();
-		GlRenderCompat.defaultBlendFunc();
+		RenderSystem.disableBlend();
+		RenderSystem.defaultBlendFunc();
 	}
 
 	private static void resetWriteMask() {
-		GlRenderCompat.depthMask(true);
-		GlRenderCompat.colorMask(true, true, true, true);
+		RenderSystem.depthMask(true);
+		RenderSystem.colorMask(true, true, true, true);
 	}
 
 	public static boolean materialEquals(Material lhs, Material rhs) {

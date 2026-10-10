@@ -2,7 +2,7 @@ plugins {
     idea
     java
     `maven-publish`
-    id("dev.architectury.loom-no-remap")
+    id("dev.architectury.loom")
     id("flywheel.subproject")
 }
 
@@ -116,11 +116,10 @@ jarSets {
 }
 
 dependencies {
-    compileOnly("net.fabricmc:fabric-loader:${property("fabric_loader_version")}")
+    modCompileOnly("net.fabricmc:fabric-loader:${property("fabric_loader_version")}")
 
-    // Optional rendering compat — not yet published for 26.1
-    // compileOnly("maven.modrinth:sodium:${property("sodium_version")}-fabric")
-    // compileOnly("maven.modrinth:iris:${property("iris_version")}-fabric")
+    modCompileOnly("maven.modrinth:sodium:${property("sodium_version")}-fabric")
+    modCompileOnly("maven.modrinth:iris:${property("iris_version")}-fabric")
 
     compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")!!)
 

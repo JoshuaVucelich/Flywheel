@@ -28,14 +28,12 @@ abstract class MinecraftMixin {
 		FlwImpl.freezeRegistries();
 	}
 
-	// MC 26.1 renumbered constructor reload lambdas: was lambda$new$8, now lambda$new$4 (GameLoadCookie, Optional).
-	@Inject(method = "lambda$new$4", at = @At("HEAD"), remap = false)
+	@Inject(method = "lambda$new$8", at = @At("HEAD"), remap = false)
 	private void flywheel$onEndInitialResourceReload(@Coerce Object gameLoadCookie, Optional<Throwable> error, CallbackInfo ci) {
 		ModLoader.postEvent(new EndClientResourceReloadEvent((Minecraft) (Object) this, resourceManager, true, error));
 	}
 
-	// MC 26.1: was lambda$reloadResourcePacks$21, now lambda$reloadResourcePacks$0.
-	@Inject(method = "lambda$reloadResourcePacks$0", at = @At("HEAD"), remap = false)
+	@Inject(method = "lambda$reloadResourcePacks$21", at = @At("HEAD"), remap = false)
 	private void flywheel$onEndManualResourceReload(boolean recovery, @Coerce Object gameLoadCookie, CompletableFuture<Void> completablefuture, Optional<Throwable> error, CallbackInfo ci) {
 		ModLoader.postEvent(new EndClientResourceReloadEvent((Minecraft) (Object) this, resourceManager, false, error));
 	}

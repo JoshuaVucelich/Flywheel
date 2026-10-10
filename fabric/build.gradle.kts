@@ -2,7 +2,7 @@ plugins {
     idea
     java
     `maven-publish`
-    id("dev.architectury.loom-no-remap")
+    id("dev.architectury.loom")
     id("flywheel.subproject")
     id("flywheel.platform")
 }
@@ -120,22 +120,19 @@ defaultPackageInfos {
 }
 
 loom {
-    if ((findProperty("use_remapping") as String?)?.toBoolean() != false) {
-        mixin {
-            useLegacyMixinAp = true
-            add(main, "flywheel.refmap.json")
-            add(backend, "backend-flywheel.refmap.json")
-        }
+    mixin {
+        useLegacyMixinAp = true
+        add(main, "flywheel.refmap.json")
+        add(backend, "backend-flywheel.refmap.json")
     }
 }
 
 dependencies {
-    implementation("net.fabricmc:fabric-loader:${property("fabric_loader_version")}")
-    api("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
+    modImplementation("net.fabricmc:fabric-loader:${property("fabric_loader_version")}")
+    modApi("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
 
-    // Optional rendering compat — not yet published for 26.1
-    // compileOnly("maven.modrinth:sodium:${property("sodium_version")}-fabric")
-    // compileOnly("maven.modrinth:iris:${property("iris_version")}-fabric")
+    modCompileOnly("maven.modrinth:sodium:${property("sodium_version")}-fabric")
+    modCompileOnly("maven.modrinth:iris:${property("iris_version")}-fabric")
 
     "forApi"(project(path = common, configuration = "apiClasses"))
     "forLib"(project(path = common, configuration = "libClasses"))

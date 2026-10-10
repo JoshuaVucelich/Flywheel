@@ -2,7 +2,7 @@ plugins {
     idea
     java
     `maven-publish`
-    id("dev.architectury.loom-no-remap")
+    id("dev.architectury.loom")
     id("flywheel.subproject")
     id("flywheel.platform")
 }
@@ -66,11 +66,9 @@ defaultPackageInfos {
 }
 
 loom {
-    if ((findProperty("use_remapping") as String?)?.toBoolean() != false) {
-        mixin {
-            useLegacyMixinAp = true
-            add(main, "vanillin.refmap.json")
-        }
+    mixin {
+        useLegacyMixinAp = true
+        add(main, "vanillin.refmap.json")
     }
 }
 

@@ -4,7 +4,9 @@
   "package" : "dev.engine_room.flywheel.impl.mixin.neoforge",
   "compatibilityLevel": "JAVA_17",
   "refmap": "flywheel.refmap.json",
-  "client": [],
+  "client": [
+    "ModelBlockRendererMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

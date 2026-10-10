@@ -1,13 +1,13 @@
 package dev.engine_room.flywheel.api.material;
 
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * A shader that decides what colors should be discarded in the fragment shader.
  */
 public interface CutoutShader {
 	/**
-	 * @apiNote {@code flywheel/} is implicitly prepended to the {@link Identifier}'s path.
+	 * @apiNote {@code flywheel/} is implicitly prepended to the {@link ResourceLocation}'s path.
 	 */
-	Identifier source();
+	ResourceLocation source();
 }
