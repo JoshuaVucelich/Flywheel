@@ -4,7 +4,7 @@ minecraft = "26.1.2"
 
 # https://neoforged.net
 mdg = "2.0.+"
-neoforge = "26.1.2.78"
+neoforge = "26.1.2.75"
 
 # https://fabricmc.net/develop
 loom = "1.17.+"
