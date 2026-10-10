@@ -2,9 +2,9 @@ package dev.engine_room.flywheel.lib.model;
 
 import java.util.Collection;
 
-import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.jspecify.annotations.Nullable;
 
 import dev.engine_room.flywheel.api.material.CardinalLightingMode;
 import dev.engine_room.flywheel.api.material.Material;
@@ -26,11 +26,11 @@ public final class ModelUtil {
 	private static final ChunkSectionLayer[] CHUNK_LAYERS = ChunkSectionLayer.values();
 
 	// Array of chunk materials to make lookups easier.
-	// Index by (chunkLayerIdx * 4 + shaded * 2 + ambientOcclusion).
-	private static final Material[] CHUNK_MATERIALS = new Material[CHUNK_LAYERS.length * 4];
+	// Index by (renderTypeIdx * 4 + shaded * 2 + ambientOcclusion).
+	private static final Material[] CHUNK_MATERIALS = new Material[16];
 
 	static {
-		Material[] baseChunkMaterials = new Material[]{Materials.SOLID_BLOCK, Materials.CUTOUT_BLOCK, Materials.TRANSLUCENT_BLOCK};
+		Material[] baseChunkMaterials = new Material[]{Materials.SOLID_BLOCK, Materials.CUTOUT_BLOCK, Materials.TRANSLUCENT_BLOCK, Materials.TRIPWIRE_BLOCK,};
 		for (int chunkLayerIdx = 0; chunkLayerIdx < CHUNK_LAYERS.length; chunkLayerIdx++) {
 			int baseMaterialIdx = chunkLayerIdx * 4;
 			Material baseChunkMaterial = baseChunkMaterials[chunkLayerIdx];
@@ -57,14 +57,14 @@ public final class ModelUtil {
 	}
 
 	@Nullable
-	public static Material getMaterial(ChunkSectionLayer chunkLayer, boolean shaded) {
-		return getMaterial(chunkLayer, shaded, true);
+	public static Material getMaterial(ChunkSectionLayer chunkSectionLayer, boolean shaded) {
+		return getMaterial(chunkSectionLayer, shaded, true);
 	}
 
 	@Nullable
-	public static Material getMaterial(ChunkSectionLayer chunkLayer, boolean shaded, boolean ambientOcclusion) {
+	public static Material getMaterial(ChunkSectionLayer chunkSectionLayer, boolean shaded, boolean ambientOcclusion) {
 		for (int chunkLayerIdx = 0; chunkLayerIdx < CHUNK_LAYERS.length; ++chunkLayerIdx) {
-			if (chunkLayer == CHUNK_LAYERS[chunkLayerIdx]) {
+			if (chunkSectionLayer == CHUNK_LAYERS[chunkLayerIdx]) {
 				int shadedIdx = shaded ? 1 : 0;
 				int ambientOcclusionIdx = ambientOcclusion ? 1 : 0;
 
@@ -82,8 +82,12 @@ public final class ModelUtil {
 			return Materials.CUTOUT_BLOCK;
 		}
 
-		if (renderType == Sheets.translucentBlockSheet() || renderType == Sheets.translucentItemSheet()) {
-			return Materials.TRANSLUCENT_ENTITY;
+		if (renderType == Sheets.translucentBlockItemSheet()) {
+			return Materials.TRANSLUCENT_ITEM_ENTITY_BLOCK;
+		}
+
+		if (renderType == Sheets.translucentItemSheet()) {
+			return Materials.TRANSLUCENT_ITEM_ENTITY_ITEM;
 		}
 
 		if (renderType == RenderTypes.glint() || renderType == RenderTypes.glintTranslucent()) {

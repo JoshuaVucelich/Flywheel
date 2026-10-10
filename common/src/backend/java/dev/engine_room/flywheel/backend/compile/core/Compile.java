@@ -79,8 +79,8 @@ public class Compile<K> {
 			return with((key, loader) -> loader.get(sourceFetcher.apply(key)));
 		}
 
-		public ShaderCompiler<K> withResource(Identifier resourceLocation) {
-			return withResource($ -> resourceLocation);
+		public ShaderCompiler<K> withResource(Identifier id) {
+			return withResource($ -> id);
 		}
 
 		public ShaderCompiler<K> onCompile(BiConsumer<K, Compilation> cb) {

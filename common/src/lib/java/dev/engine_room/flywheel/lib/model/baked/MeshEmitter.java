@@ -2,24 +2,28 @@ package dev.engine_room.flywheel.lib.model.baked;
 
 import java.util.Arrays;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.UnknownNullability;
+import org.jspecify.annotations.Nullable;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 
 import dev.engine_room.flywheel.api.material.Material;
 import dev.engine_room.flywheel.api.model.Mesh;
 import dev.engine_room.flywheel.api.model.Model;
+import dev.engine_room.flywheel.lib.vertex.FlywheelVertexFormats;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 
-class MeshEmitter {
+@ApiStatus.Internal
+public abstract class MeshEmitter implements VertexConsumer {
 	private static final int INITIAL_CAPACITY = 1;
 
 	private final ByteBufferBuilderStack byteBufferBuilderStack;
-	private final ChunkSectionLayer layer;
+	private final ChunkSectionLayer chunkSectionLayer;
 
 	private Material @UnknownNullability [] materials = new Material[INITIAL_CAPACITY];
 	private BufferBuilder @UnknownNullability [] bufferBuilders = new BufferBuilder[INITIAL_CAPACITY];
@@ -32,9 +36,9 @@ class MeshEmitter {
 
 	private int currentIndex = 0;
 
-	MeshEmitter(ByteBufferBuilderStack byteBufferBuilderStack, ChunkSectionLayer layer) {
+	MeshEmitter(ByteBufferBuilderStack byteBufferBuilderStack, ChunkSectionLayer chunkSectionLayer) {
 		this.byteBufferBuilderStack = byteBufferBuilderStack;
-		this.layer = layer;
+		this.chunkSectionLayer = chunkSectionLayer;
 	}
 
 	public void prepare(BlockMaterialFunction blockMaterialFunction) {
@@ -90,8 +94,7 @@ class MeshEmitter {
 		}
 
 		ByteBufferBuilder byteBufferBuilder = byteBufferBuilderStack.nextOrCreate();
-
-		BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
+		BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, Mode.QUADS, FlywheelVertexFormats.BLOCK_VERTEX_FORMAT);
 
 		// currentIndex == numBufferBuildersPopulated here.
 		materials[currentIndex] = material;
@@ -102,6 +105,17 @@ class MeshEmitter {
 		++numBufferBuildersPopulated;
 
 		return bufferBuilder;
+	}
+
+	// TODO 1.21.11: cache the last used buffer?
+	@Nullable
+	public BufferBuilder getBuffer(boolean shade, boolean ao) {
+		Material key = blockMaterialFunction.apply(chunkSectionLayer, shade, ao);
+		if (key != null) {
+			return getBuffer(key);
+		} else {
+			return null;
+		}
 	}
 
 	private void resize(int capacity) {

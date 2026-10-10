@@ -1,18 +1,21 @@
 package dev.engine_room.flywheel.backend.engine.uniform;
 
+import org.joml.Vector3f;
+
 import dev.engine_room.flywheel.api.backend.RenderContext;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 
 public final class LevelUniforms extends UniformWriter {
-	private static final int SIZE = 16 * 4 + 4 * 12;
+	private static final int SIZE = 16 * 4 + 4 * 15;
 	static final UniformBuffer BUFFER = new UniformBuffer(Uniforms.LEVEL_INDEX, SIZE);
 
-	public static final org.joml.Vector3f LIGHT0_DIRECTION = new org.joml.Vector3f();
-	public static final org.joml.Vector3f LIGHT1_DIRECTION = new org.joml.Vector3f();
+	public static final Vector3f LIGHT0_DIRECTION = new Vector3f();
+	public static final Vector3f LIGHT1_DIRECTION = new Vector3f();
 
 	private LevelUniforms() {
 	}
@@ -22,18 +25,17 @@ public final class LevelUniforms extends UniformWriter {
 
 		ClientLevel level = context.level();
 		float partialTick = context.partialTick();
-		var levelState = Minecraft.getInstance().gameRenderer.getGameRenderState().levelRenderState;
-		var skyState = levelState.skyRenderState;
+		LevelRenderState levelRenderState = context.levelRenderState();
 
-		int skyColor = skyState.skyColor;
-		int cloudColor = levelState.cloudColor;
-		ptr = writeVec4(ptr, ARGB.red(skyColor) / 255f, ARGB.green(skyColor) / 255f, ARGB.blue(skyColor) / 255f, 1f);
-		ptr = writeVec4(ptr, ARGB.red(cloudColor) / 255f, ARGB.green(cloudColor) / 255f, ARGB.blue(cloudColor) / 255f, 1f);
+		int skyColor = levelRenderState.skyRenderState.skyColor;
+		int cloudColor = levelRenderState.cloudColor;
+		ptr = writeVec4(ptr, ARGB.redFloat(skyColor), ARGB.greenFloat(skyColor), ARGB.blueFloat(skyColor), 1f);
+		ptr = writeVec4(ptr, ARGB.redFloat(cloudColor), ARGB.greenFloat(cloudColor), ARGB.blueFloat(cloudColor), 1f);
 
 		ptr = writeVec3(ptr, LIGHT0_DIRECTION);
 		ptr = writeVec3(ptr, LIGHT1_DIRECTION);
 
-		long dayTime = levelState.gameTime;
+		long dayTime = level.getOverworldClockTime();
 		long levelDay = dayTime / 24000L;
 		float timeOfDay = (float) (dayTime - levelDay * 24000L) / 24000f;
 		ptr = writeInt(ptr, (int) (levelDay % 0x7FFFFFFFL));
@@ -41,10 +43,18 @@ public final class LevelUniforms extends UniformWriter {
 
 		ptr = writeInt(ptr, level.dimensionType().hasSkyLight() ? 1 : 0);
 
-		ptr = writeFloat(ptr, skyState.sunAngle);
+		float sunAngle = levelRenderState.skyRenderState.sunAngle;
+		ptr = writeFloat(ptr, sunAngle);
+		float moonAngle = levelRenderState.skyRenderState.moonAngle;
+		ptr = writeFloat(ptr, moonAngle);
+		float starAngle = levelRenderState.skyRenderState.starAngle;
+		ptr = writeFloat(ptr, starAngle);
 
-		ptr = writeFloat(ptr, skyState.starBrightness);
-		ptr = writeInt(ptr, skyState.moonPhase.ordinal());
+		int moonPhase = levelRenderState.skyRenderState.moonPhase.index();
+		ptr = writeFloat(ptr, DimensionType.MOON_BRIGHTNESS_PER_PHASE[moonPhase]);
+		ptr = writeInt(ptr, moonPhase);
+		float starBrightness = levelRenderState.skyRenderState.starBrightness;
+		ptr = writeFloat(ptr, starBrightness);
 
 		ptr = writeInt(ptr, level.isRaining() ? 1 : 0);
 		ptr = writeFloat(ptr, level.getRainLevel(partialTick));
@@ -53,22 +63,22 @@ public final class LevelUniforms extends UniformWriter {
 
 		ptr = writeFloat(ptr, level.getSkyDarken());
 
-		ptr = writeInt(ptr, level.dimensionType().ambientLight() > 0f ? 1 : 0);
+		ptr = writeInt(ptr, level.dimensionType().cardinalLightType().ordinal());
 
 		// TODO: use defines for custom dimension ids
-		int dimensionId;
-		ResourceKey<Level> dimension = level.dimension();
-		if (Level.OVERWORLD.equals(dimension)) {
-			dimensionId = 0;
-		} else if (Level.NETHER.equals(dimension)) {
-			dimensionId = 1;
-		} else if (Level.END.equals(dimension)) {
-			dimensionId = 2;
-		} else {
-			dimensionId = -1;
-		}
-		ptr = writeInt(ptr, dimensionId);
+        int dimensionId;
+        ResourceKey<Level> dimension = level.dimension();
+        if (Level.OVERWORLD.equals(dimension)) {
+            dimensionId = 0;
+        } else if (Level.NETHER.equals(dimension)) {
+            dimensionId = 1;
+        } else if (Level.END.equals(dimension)) {
+            dimensionId = 2;
+        } else {
+            dimensionId = -1;
+        }
+        ptr = writeInt(ptr, dimensionId);
 
 		BUFFER.markDirty();
-	}
+    }
 }

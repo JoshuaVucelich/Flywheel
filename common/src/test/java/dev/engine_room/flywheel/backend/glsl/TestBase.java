@@ -6,13 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
 
-import dev.engine_room.flywheel.lib.util.ResourceUtil;
+import dev.engine_room.flywheel.lib.util.IdentifierUtil;
 import net.minecraft.resources.Identifier;
 
 public class TestBase {
-	public static final Identifier FLW_A = ResourceUtil.rl("a.glsl");
-	public static final Identifier FLW_B = ResourceUtil.rl("b.glsl");
-	public static final Identifier FLW_C = ResourceUtil.rl("c.glsl");
+	public static final Identifier FLW_A = IdentifierUtil.id("a.glsl");
+	public static final Identifier FLW_B = IdentifierUtil.id("b.glsl");
+	public static final Identifier FLW_C = IdentifierUtil.id("c.glsl");
 
 	public static <T> T assertSingletonList(List<T> list) {
 		assertEquals(1, list.size());
@@ -36,9 +36,9 @@ public class TestBase {
 		return assertInstanceOf(finalErrType, pair.getSecond());
 	}
 
-	public static SourceFile findAndAssertSuccess(MockShaderSources sources, Identifier loc) {
-		var result = sources.find(loc);
-		return assertSuccessAndUnwrap(loc, result);
+	public static SourceFile findAndAssertSuccess(MockShaderSources sources, Identifier id) {
+		var result = sources.find(id);
+		return assertSuccessAndUnwrap(id, result);
 	}
 
 	public static SourceFile assertSuccessAndUnwrap(Identifier expectedName, LoadResult result) {

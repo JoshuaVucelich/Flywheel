@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 
 import dev.engine_room.flywheel.backend.glsl.span.Span;
 import dev.engine_room.flywheel.backend.glsl.span.StringSpan;
-import dev.engine_room.flywheel.lib.util.ResourceUtil;
+import dev.engine_room.flywheel.lib.util.IdentifierUtil;
 import net.minecraft.IdentifierException;
 import net.minecraft.resources.Identifier;
 
@@ -67,15 +67,15 @@ public class SourceFile implements SourceComponent {
 				continue;
 			}
 
-			Identifier location;
+			Identifier id;
 			try {
-				location = ResourceUtil.parseFlywheelDefault(string);
+				id = IdentifierUtil.parseFlywheelDefault(string);
 			} catch (IdentifierException e) {
 				failures.add(Pair.of(fileSpan, new LoadError.MalformedInclude(e)));
 				continue;
 			}
 
-			var result = sourceFinder.apply(location);
+			var result = sourceFinder.apply(id);
 
 			if (result instanceof LoadResult.Success s) {
 				included.add(s.unwrap());

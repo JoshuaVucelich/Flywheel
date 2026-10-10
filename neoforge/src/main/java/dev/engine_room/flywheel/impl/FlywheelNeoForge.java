@@ -1,8 +1,5 @@
 package dev.engine_room.flywheel.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.jetbrains.annotations.UnknownNullability;
 
@@ -11,13 +8,13 @@ import dev.engine_room.flywheel.api.event.EndClientResourceReloadEvent;
 import dev.engine_room.flywheel.api.event.ReloadLevelRendererEvent;
 import dev.engine_room.flywheel.backend.compile.FlwProgramsReloader;
 import dev.engine_room.flywheel.backend.engine.uniform.Uniforms;
-import dev.engine_room.flywheel.impl.compat.EmbeddiumCompat;
+import dev.engine_room.flywheel.impl.task.FlwTaskExecutor;
 import dev.engine_room.flywheel.impl.visualization.VisualizationEventHandler;
-import dev.engine_room.flywheel.lib.model.baked.PartialModelEventHandler;
+import dev.engine_room.flywheel.lib.model.baked.NeoForgePartialModel;
+import dev.engine_room.flywheel.lib.util.IdentifierUtil;
 import dev.engine_room.flywheel.lib.util.LevelAttached;
 import dev.engine_room.flywheel.lib.util.RendererReloadCache;
 import dev.engine_room.flywheel.lib.util.ResourceReloadHolder;
-import dev.engine_room.flywheel.lib.util.ResourceUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.neoforged.api.distmarker.Dist;
@@ -28,6 +25,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterDebugEntriesEvent;
+import net.neoforged.neoforge.client.event.lifecycle.ClientStoppingEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
@@ -54,11 +52,11 @@ public final class FlywheelNeoForge {
 
 		CrashReportCallables.registerCrashCallable("Flywheel Backend", BackendManagerImpl::getBackendString);
 		FlwImpl.init();
-
-		EmbeddiumCompat.init();
 	}
 
 	private static void registerImplEventListeners(IEventBus gameEventBus, IEventBus modEventBus) {
+		gameEventBus.addListener((ClientStoppingEvent e) -> FlwTaskExecutor.get().shutdown());
+
 		gameEventBus.addListener((ReloadLevelRendererEvent e) -> BackendManagerImpl.onReloadLevelRenderer(e.level()));
 
 		gameEventBus.addListener((LevelTickEvent.Post e) -> {
@@ -72,23 +70,7 @@ public final class FlywheelNeoForge {
 
 		gameEventBus.addListener(FlwCommands::registerClientCommands);
 
-		modEventBus.addListener((RegisterDebugEntriesEvent e) -> {
-			e.register(ResourceUtil.rl("debug"), (displayer, level, chunk, neighborChunk) -> {
-				Minecraft minecraft = Minecraft.getInstance();
-
-				if (!minecraft.getDebugOverlay().showDebugScreen()) {
-					return;
-				}
-
-				List<String> lines = new ArrayList<>();
-				FlwDebugInfo.addDebugInfo(minecraft, lines);
-				for (String line : lines) {
-					if (!line.isEmpty()) {
-						displayer.addLine(line);
-					}
-				}
-			});
-		});
+		modEventBus.addListener((RegisterDebugEntriesEvent e) -> e.register(FlwDebugInfo.FlwDebugEntry.ID, new FlwDebugInfo.FlwDebugEntry()));
 
 		modEventBus.addListener((EndClientResourceReloadEvent e) -> BackendManagerImpl.onEndClientResourceReload(e.error().isPresent()));
 
@@ -107,15 +89,15 @@ public final class FlywheelNeoForge {
 		modEventBus.addListener((EndClientResourceReloadEvent e) -> RendererReloadCache.onReloadLevelRenderer());
 		modEventBus.addListener((EndClientResourceReloadEvent e) -> ResourceReloadHolder.onEndClientResourceReload());
 
-		modEventBus.addListener(PartialModelEventHandler::onRegisterStandalone);
-		modEventBus.addListener(PartialModelEventHandler::onBakingCompleted);
+		modEventBus.addListener(NeoForgePartialModel::registerAll);
+		modEventBus.addListener(NeoForgePartialModel::refreshAll);
 	}
 
 	private static void registerBackendEventListeners(IEventBus gameEventBus, IEventBus modEventBus) {
 		gameEventBus.addListener((ReloadLevelRendererEvent e) -> Uniforms.onReloadLevelRenderer());
 
 		modEventBus.addListener((AddClientReloadListenersEvent e) -> {
-			e.addListener(ResourceUtil.rl("programs"), FlwProgramsReloader.INSTANCE);
+			e.addListener(FlwProgramsReloader.ID, FlwProgramsReloader.INSTANCE);
 		});
 	}
 

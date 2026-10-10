@@ -1,28 +1,20 @@
 package dev.engine_room.flywheel.backend.engine.uniform;
 
-import net.minecraft.client.renderer.fog.FogData;
+import org.joml.Vector4fc;
 
 public final class FogUniforms extends UniformWriter {
-	private static final int SIZE = 4 * 7;
+	private static final int SIZE = 4 * 10;
 	static final UniformBuffer BUFFER = new UniformBuffer(Uniforms.FOG_INDEX, SIZE);
 
-	public static void update(FogData fogData) {
-		if (fogData == null) {
-			return;
-		}
-
+	public static void update(Vector4fc color, float environmentalStart, float environmentalEnd,
+							  float renderDistanceStart, float renderDistanceEnd, float skyEnd, float cloudEnd) {
 		long ptr = BUFFER.ptr();
 
-		var color = fogData.color;
-
-		ptr = writeFloat(ptr, color.x);
-		ptr = writeFloat(ptr, color.y);
-		ptr = writeFloat(ptr, color.z);
-		ptr = writeFloat(ptr, color.w);
-		ptr = writeFloat(ptr, fogData.environmentalStart);
-		ptr = writeFloat(ptr, fogData.environmentalEnd);
-		// FogShape was removed in 26.1; sphere (0) matches legacy default.
-		ptr = writeInt(ptr, 0);
+		ptr = writeVec4(ptr, color);
+		ptr = writeVec2(ptr, environmentalStart, environmentalEnd);
+		ptr = writeVec2(ptr, renderDistanceStart, renderDistanceEnd);
+		ptr = writeFloat(ptr, skyEnd);
+		ptr = writeFloat(ptr, cloudEnd);
 
 		BUFFER.markDirty();
 	}

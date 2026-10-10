@@ -26,12 +26,6 @@ class TransformingVertexConsumer implements VertexConsumer {
 	}
 
 	@Override
-	public VertexConsumer setLineWidth(float width) {
-		delegate.setLineWidth(width);
-		return this;
-	}
-
-	@Override
 	public VertexConsumer addVertex(float x, float y, float z) {
 		Matrix4f matrix = poseStack.last().pose();
 		delegate.addVertex(
@@ -42,14 +36,14 @@ class TransformingVertexConsumer implements VertexConsumer {
 	}
 
 	@Override
-	public VertexConsumer setColor(int color) {
-		delegate.setColor(color);
+	public VertexConsumer setColor(int red, int green, int blue, int alpha) {
+		delegate.setColor(red, green, blue, alpha);
 		return this;
 	}
 
 	@Override
-	public VertexConsumer setColor(int red, int green, int blue, int alpha) {
-		delegate.setColor(red, green, blue, alpha);
+	public VertexConsumer setColor(int color) {
+		delegate.setColor(color);
 		return this;
 	}
 
@@ -78,6 +72,12 @@ class TransformingVertexConsumer implements VertexConsumer {
 				MatrixMath.transformNormalX(matrix, x, y, z),
 				MatrixMath.transformNormalY(matrix, x, y, z),
 				MatrixMath.transformNormalZ(matrix, x, y, z));
+		return this;
+	}
+
+	@Override
+	public VertexConsumer setLineWidth(float width) {
+		delegate.setLineWidth(width);
 		return this;
 	}
 }

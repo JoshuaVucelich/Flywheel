@@ -126,7 +126,7 @@ public class FabricFlwConfig implements FlwConfig {
 				useDefaultBackend = false;
 				return;
 			} catch (IdentifierException e) {
-				msg = "'backend' value '" + value + "' is not a valid resource location";
+				msg = "'backend' value '" + value + "' is not a valid resource id";
 			} catch (IllegalArgumentException e) {
 				msg = "Backend with ID '" + value + "' is not registered";
 			} catch (Exception e) {

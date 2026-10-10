@@ -14,7 +14,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
 import dev.engine_room.flywheel.api.backend.Backend;
-import dev.engine_room.flywheel.lib.util.ResourceUtil;
+import dev.engine_room.flywheel.lib.util.IdentifierUtil;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.network.chat.Component;
@@ -32,7 +32,7 @@ public class BackendArgument implements ArgumentType<Backend> {
 
 	@Override
 	public Backend parse(StringReader reader) throws CommandSyntaxException {
-		Identifier id = ResourceUtil.readFlywheelDefault(reader);
+		Identifier id = IdentifierUtil.readFlywheelDefault(reader);
 		Backend backend = Backend.REGISTRY.get(id);
 
 		if (backend == null) {

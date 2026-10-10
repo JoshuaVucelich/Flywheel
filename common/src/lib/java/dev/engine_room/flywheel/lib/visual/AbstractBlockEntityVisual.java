@@ -2,7 +2,7 @@ package dev.engine_room.flywheel.lib.visual;
 
 import java.util.Iterator;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.joml.FrustumIntersection;
 
@@ -96,7 +96,7 @@ public abstract class AbstractBlockEntityVisual<T extends BlockEntity> extends A
 	 */
 	public boolean doDistanceLimitThisFrame(DynamicVisual.Context context) {
 		return !context.limiter()
-				.shouldUpdate(pos.distToCenterSqr(context.camera().position()));
+				.shouldUpdate(pos.distToCenterSqr(context.cameraRenderState().pos));
 	}
 
 	protected int computePackedLight() {

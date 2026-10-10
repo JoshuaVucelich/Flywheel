@@ -31,16 +31,12 @@ import net.minecraft.world.entity.Entity;
  * A component that uses instances to render the fire animation on an entity.
  */
 public final class FireComponent implements EntityComponent {
-	private static final int FULL_BLOCK_LIGHT = LightCoordsUtil.pack(15, 0);
 	private static final Material FIRE_MATERIAL = SimpleMaterial.builderOf(Materials.CUTOUT_UNSHADED_BLOCK)
 			.backfaceCulling(false) // Disable backface because we want to be able to flip the model.
 			.build();
 
-	// Parameterize by the material instead of the sprite
-	// because Material#sprite is a surprisingly heavy operation
-	// and because sprites are invalidated after a resource reload.
-	private static final RendererReloadCache<SpriteId, Model> FIRE_MODELS = new RendererReloadCache<>(spriteId -> {
-		var sprite = Minecraft.getInstance().getAtlasManager().get(spriteId);
+	private static final RendererReloadCache<SpriteId, Model> FIRE_MODELS = new RendererReloadCache<>(texture -> {
+		TextureAtlasSprite sprite = Minecraft.getInstance().getAtlasManager().get(texture);
 		return new SingleMeshModel(new FireMesh(sprite), FIRE_MATERIAL);
 	});
 
@@ -61,7 +57,7 @@ public final class FireComponent implements EntityComponent {
 		TransformedInstance instance = context.instancerProvider()
 				.instancer(InstanceTypes.TRANSFORMED, model)
 				.createInstance();
-		instance.light(FULL_BLOCK_LIGHT);
+		instance.light(LightCoordsUtil.pack(15, 0));
 		instance.setChanged();
 		return instance;
 	}
@@ -98,8 +94,7 @@ public final class FireComponent implements EntityComponent {
 		stack.setIdentity();
 		stack.translate(entityX - renderOrigin.getX(), entityY - renderOrigin.getY(), entityZ - renderOrigin.getZ());
 		stack.scale(scale, scale, scale);
-		stack.mulPose(Axis.YP.rotationDegrees(-context.camera()
-				.yRot()));
+		stack.mulPose(Axis.YP.rotationDegrees(-context.cameraRenderState().yRot));
 		stack.translate(0.0F, 0.0F, -0.3F + (float) ((int) maxHeight) * 0.02F);
 
 		for (int i = 0; y < maxHeight; ++i) {
@@ -159,7 +154,7 @@ public final class FireComponent implements EntityComponent {
 			vertexList.b(i, 1);
 			vertexList.u(i, u);
 			vertexList.v(i, v);
-			vertexList.light(i, FULL_BLOCK_LIGHT);
+			vertexList.light(i, LightCoordsUtil.pack(15, 0));
 			vertexList.normalX(i, 0);
 			vertexList.normalY(i, 1);
 			vertexList.normalZ(i, 0);

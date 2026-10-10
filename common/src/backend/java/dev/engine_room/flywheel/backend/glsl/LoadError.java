@@ -18,7 +18,7 @@ sealed public interface LoadError {
 	record CircularDependency(Identifier offender, List<Identifier> stack) implements LoadError {
 		public String format() {
 			return stack.stream()
-					.dropWhile(l -> !l.equals(offender))
+					.dropWhile(id -> !id.equals(offender))
 					.map(Identifier::toString)
 					.collect(Collectors.joining(" -> "));
 		}
@@ -31,12 +31,12 @@ sealed public interface LoadError {
 		}
 	}
 
-	record IncludeError(Identifier location, List<Pair<Span, LoadError>> innerErrors) implements LoadError {
+	record IncludeError(Identifier id, List<Pair<Span, LoadError>> innerErrors) implements LoadError {
 		@Override
 		public ErrorBuilder generateMessage() {
 			var out = ErrorBuilder.create()
-					.error("could not load \"" + location + "\"")
-					.pointAtFile(location);
+					.error("could not load \"" + id + "\"")
+					.pointAtFile(id);
 
 			for (var innerError : innerErrors) {
 				var err = innerError.getSecond()
@@ -49,25 +49,25 @@ sealed public interface LoadError {
 		}
 	}
 
-	record IOError(Identifier location, IOException exception) implements LoadError {
+	record IOError(Identifier id, IOException exception) implements LoadError {
 		@Override
 		public ErrorBuilder generateMessage() {
 			if (exception instanceof FileNotFoundException) {
 				return ErrorBuilder.create()
-						.error("\"" + location + "\" was not found");
+						.error("\"" + id + "\" was not found");
 			} else {
 				return ErrorBuilder.create()
-						.error("could not load \"" + location + "\" due to an IO error")
+						.error("could not load \"" + id + "\" due to an IO error")
 						.note(exception.toString());
 			}
 		}
 	}
 
-	record ResourceError(Identifier location) implements LoadError {
+	record ResourceError(Identifier id) implements LoadError {
 		@Override
 		public ErrorBuilder generateMessage() {
 			return ErrorBuilder.create()
-					.error("\"" + location + "\" was not found");
+					.error("\"" + id + "\" was not found");
 		}
 	}
 

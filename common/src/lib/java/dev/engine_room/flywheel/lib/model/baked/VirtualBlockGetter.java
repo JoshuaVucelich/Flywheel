@@ -3,10 +3,10 @@ package dev.engine_room.flywheel.lib.model.baked;
 import java.util.function.ToIntFunction;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.CardinalLighting;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
@@ -14,6 +14,8 @@ import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
 
 public abstract class VirtualBlockGetter implements BlockAndTintGetter {
+	public static final CardinalLighting FULL_LIGHTING = new CardinalLighting(1F, 1F, 1F, 1F, 1F, 1F);
+
 	protected final VirtualLightEngine lightEngine;
 
 	public VirtualBlockGetter(ToIntFunction<BlockPos> blockLightFunc, ToIntFunction<BlockPos> skyLightFunc) {
@@ -27,7 +29,7 @@ public abstract class VirtualBlockGetter implements BlockAndTintGetter {
 
 	@Override
 	public CardinalLighting cardinalLighting() {
-		return CardinalLighting.DEFAULT;
+		return FULL_LIGHTING;
 	}
 
 	@Override
@@ -37,7 +39,7 @@ public abstract class VirtualBlockGetter implements BlockAndTintGetter {
 
 	@Override
 	public int getBlockTint(BlockPos pos, ColorResolver resolver) {
-		Biome plainsBiome = Minecraft.getInstance().getConnection().registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS).value();
+		Biome plainsBiome = Minecraft.getInstance().getConnection().registryAccess().lookupOrThrow(Registries.BIOME).getValueOrThrow(Biomes.PLAINS);
 		return resolver.getColor(plainsBiome, pos.getX(), pos.getZ());
 	}
 }

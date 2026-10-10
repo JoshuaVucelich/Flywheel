@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -18,7 +18,7 @@ import dev.engine_room.flywheel.backend.glsl.generate.GlslBlock;
 import dev.engine_room.flywheel.backend.glsl.generate.GlslBuilder;
 import dev.engine_room.flywheel.backend.glsl.generate.GlslExpr;
 import dev.engine_room.flywheel.backend.glsl.generate.GlslSwitch;
-import dev.engine_room.flywheel.lib.util.ResourceUtil;
+import dev.engine_room.flywheel.lib.util.IdentifierUtil;
 import net.minecraft.resources.Identifier;
 
 public class UberShaderComponent implements SourceComponent {
@@ -40,7 +40,7 @@ public class UberShaderComponent implements SourceComponent {
 
 	@Override
 	public String name() {
-		return ResourceUtil.rl("uber_shader").toString() + " / " + name;
+		return IdentifierUtil.id("uber_shader").toString() + " / " + name;
 	}
 
 	@Override

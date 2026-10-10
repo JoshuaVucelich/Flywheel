@@ -16,8 +16,8 @@ import dev.engine_room.flywheel.lib.material.StandardMaterialShaders;
 import dev.engine_room.flywheel.lib.memory.MemoryBlock;
 import dev.engine_room.flywheel.lib.vertex.FullVertexView;
 import dev.engine_room.flywheel.lib.vertex.VertexView;
-import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.util.LightCoordsUtil;
 
 public final class LineModelBuilder {
 	private static final Material MATERIAL = SimpleMaterial.builder()

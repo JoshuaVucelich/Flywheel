@@ -5,15 +5,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import dev.engine_room.flywheel.backend.gl.GlCompat;
 
-@Mixin(value = RenderSystem.class, remap = false)
+@Mixin(RenderSystem.class)
 abstract class RenderSystemMixin {
-	@Inject(method = "initRenderer(Lcom/mojang/blaze3d/systems/GpuDevice;)V", at = @At("RETURN"))
-	private static void flywheel$onInitRenderer(GpuDevice device, CallbackInfo ci) {
+	@Inject(method = "initRenderer", at = @At("RETURN"))
+	private static void flywheel$onInitRenderer(CallbackInfo ci) {
 		GlCompat.init();
 	}
 }

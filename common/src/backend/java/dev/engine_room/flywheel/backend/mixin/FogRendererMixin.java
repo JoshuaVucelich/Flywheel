@@ -9,10 +9,10 @@ import dev.engine_room.flywheel.backend.engine.uniform.FogUniforms;
 import net.minecraft.client.renderer.fog.FogData;
 import net.minecraft.client.renderer.fog.FogRenderer;
 
-@Mixin(value = FogRenderer.class, remap = false)
+@Mixin(FogRenderer.class)
 abstract class FogRendererMixin {
-	@Inject(method = "updateBuffer(Lnet/minecraft/client/renderer/fog/FogData;)V", at = @At("RETURN"))
-	private void flywheel$onUpdateFog(FogData fogData, CallbackInfo ci) {
-		FogUniforms.update(fogData);
+	@Inject(method = "updateBuffer(Lnet/minecraft/client/renderer/fog/FogData;)V", at = @At("HEAD"))
+	private static void flywheel$onReturnSetupFog(FogData fog, CallbackInfo ci) {
+		FogUniforms.update(fog.color, fog.environmentalStart, fog.environmentalEnd, fog.renderDistanceStart, fog.renderDistanceEnd, fog.skyEnd, fog.cloudEnd);
 	}
 }

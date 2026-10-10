@@ -54,14 +54,14 @@ public class TestErrorMessages extends TestBase {
 				""", sources, FLW_A);
 	}
 
-	public static void assertErrorMatches(String expected, MockShaderSources sources, Identifier loc) {
-		var message = assertErrorAndGetMessage(sources, loc).build();
+	public static void assertErrorMatches(String expected, MockShaderSources sources, Identifier id) {
+		var message = assertErrorAndGetMessage(sources, id).build();
 
 		assertEquals(expected.trim(), message.trim());
 	}
 
-	public static ErrorBuilder assertErrorAndGetMessage(MockShaderSources sources, Identifier loc) {
-		var result = sources.find(loc);
+	public static ErrorBuilder assertErrorAndGetMessage(MockShaderSources sources, Identifier id) {
+		var result = sources.find(id);
 		var failure = assertInstanceOf(LoadResult.Failure.class, result);
 		return failure.error()
 				.generateMessage();
