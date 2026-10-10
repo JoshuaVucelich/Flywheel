@@ -1,5 +1,8 @@
 package dev.engine_room.flywheel.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.jetbrains.annotations.UnknownNullability;
 
@@ -14,6 +17,7 @@ import dev.engine_room.flywheel.lib.model.baked.PartialModelEventHandler;
 import dev.engine_room.flywheel.lib.util.LevelAttached;
 import dev.engine_room.flywheel.lib.util.RendererReloadCache;
 import dev.engine_room.flywheel.lib.util.ResourceReloadHolder;
+import dev.engine_room.flywheel.lib.util.ResourceUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.neoforged.api.distmarker.Dist;
@@ -22,8 +26,8 @@ import net.neoforged.fml.CrashReportCallables;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterDebugEntriesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
@@ -68,14 +72,22 @@ public final class FlywheelNeoForge {
 
 		gameEventBus.addListener(FlwCommands::registerClientCommands);
 
-		gameEventBus.addListener((CustomizeGuiOverlayEvent.DebugText e) -> {
-			Minecraft minecraft = Minecraft.getInstance();
+		modEventBus.addListener((RegisterDebugEntriesEvent e) -> {
+			e.register(ResourceUtil.rl("debug"), (displayer, level, chunk, neighborChunk) -> {
+				Minecraft minecraft = Minecraft.getInstance();
 
-			if (!minecraft.getDebugOverlay().showDebugScreen()) {
-				return;
-			}
+				if (!minecraft.getDebugOverlay().showDebugScreen()) {
+					return;
+				}
 
-			FlwDebugInfo.addDebugInfo(minecraft, e.getRight());
+				List<String> lines = new ArrayList<>();
+				FlwDebugInfo.addDebugInfo(minecraft, lines);
+				for (String line : lines) {
+					if (!line.isEmpty()) {
+						displayer.addLine(line);
+					}
+				}
+			});
 		});
 
 		modEventBus.addListener((EndClientResourceReloadEvent e) -> BackendManagerImpl.onEndClientResourceReload(e.error().isPresent()));
@@ -95,15 +107,15 @@ public final class FlywheelNeoForge {
 		modEventBus.addListener((EndClientResourceReloadEvent e) -> RendererReloadCache.onReloadLevelRenderer());
 		modEventBus.addListener((EndClientResourceReloadEvent e) -> ResourceReloadHolder.onEndClientResourceReload());
 
-		modEventBus.addListener(PartialModelEventHandler::onRegisterAdditional);
+		modEventBus.addListener(PartialModelEventHandler::onRegisterStandalone);
 		modEventBus.addListener(PartialModelEventHandler::onBakingCompleted);
 	}
 
 	private static void registerBackendEventListeners(IEventBus gameEventBus, IEventBus modEventBus) {
 		gameEventBus.addListener((ReloadLevelRendererEvent e) -> Uniforms.onReloadLevelRenderer());
 
-		modEventBus.addListener((RegisterClientReloadListenersEvent e) -> {
-			e.registerReloadListener(FlwProgramsReloader.INSTANCE);
+		modEventBus.addListener((AddClientReloadListenersEvent e) -> {
+			e.addListener(ResourceUtil.rl("programs"), FlwProgramsReloader.INSTANCE);
 		});
 	}
 

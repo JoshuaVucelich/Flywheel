@@ -10,12 +10,14 @@ import dev.engine_room.flywheel.lib.instance.TransformedInstance;
 import dev.engine_room.flywheel.lib.model.LineModelBuilder;
 import dev.engine_room.flywheel.lib.visual.util.SmartRecycler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
 public final class HitboxComponent implements EntityComponent {
+	private static final int FULL_BLOCK_LIGHT = LightCoordsUtil.pack(15, 0);
 	//    010------110
 	//    /|       /|
 	//   / |      / |
@@ -67,7 +69,7 @@ public final class HitboxComponent implements EntityComponent {
 		TransformedInstance instance = context.instancerProvider()
 				.instancer(InstanceTypes.TRANSFORMED, model)
 				.createInstance();
-		instance.light(LightTexture.FULL_BLOCK);
+		instance.light(FULL_BLOCK_LIGHT);
 		instance.setChanged();
 		return instance;
 	}
@@ -86,8 +88,8 @@ public final class HitboxComponent implements EntityComponent {
 		recycler.resetCount();
 
 		var shouldRenderHitBoxes = Minecraft.getInstance()
-				.getEntityRenderDispatcher()
-				.shouldRenderHitBoxes();
+				.debugEntries
+				.isCurrentlyEnabled(DebugScreenEntries.ENTITY_HITBOXES);
 		if (shouldRenderHitBoxes && !entity.isInvisible() && !Minecraft.getInstance()
 				.showOnlyReducedInfo()) {
 			float partialTick = context.partialTick();

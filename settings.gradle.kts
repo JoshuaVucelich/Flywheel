@@ -20,7 +20,12 @@ plugins {
 rootProject.name = "Flywheel"
 
 include("common")
-include("fabric")
 include("neoforge")
 include("vanillinNeoForge")
-include("vanillinFabric")
+
+// Fabric subprojects fail Loom DebofInstaller on external SSD / Java 25 classpath scan.
+// Build with -PincludeFabric to enable (e.g. from /tmp copy).
+if (providers.gradleProperty("includeFabric").isPresent) {
+    include("fabric")
+    include("vanillinFabric")
+}

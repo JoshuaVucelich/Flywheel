@@ -19,9 +19,11 @@ import dev.engine_room.flywheel.lib.model.QuadMesh;
 import dev.engine_room.flywheel.lib.model.SingleMeshModel;
 import dev.engine_room.flywheel.lib.util.RendererReloadCache;
 import dev.engine_room.flywheel.lib.visual.util.SmartRecycler;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.sprite.SpriteId;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 
@@ -29,6 +31,7 @@ import net.minecraft.world.entity.Entity;
  * A component that uses instances to render the fire animation on an entity.
  */
 public final class FireComponent implements EntityComponent {
+	private static final int FULL_BLOCK_LIGHT = LightCoordsUtil.pack(15, 0);
 	private static final Material FIRE_MATERIAL = SimpleMaterial.builderOf(Materials.CUTOUT_UNSHADED_BLOCK)
 			.backfaceCulling(false) // Disable backface because we want to be able to flip the model.
 			.build();
@@ -36,8 +39,9 @@ public final class FireComponent implements EntityComponent {
 	// Parameterize by the material instead of the sprite
 	// because Material#sprite is a surprisingly heavy operation
 	// and because sprites are invalidated after a resource reload.
-	private static final RendererReloadCache<net.minecraft.client.resources.model.Material, Model> FIRE_MODELS = new RendererReloadCache<>(texture -> {
-		return new SingleMeshModel(new FireMesh(texture.sprite()), FIRE_MATERIAL);
+	private static final RendererReloadCache<SpriteId, Model> FIRE_MODELS = new RendererReloadCache<>(spriteId -> {
+		var sprite = Minecraft.getInstance().getAtlasManager().get(spriteId);
+		return new SingleMeshModel(new FireMesh(sprite), FIRE_MATERIAL);
 	});
 
 	private final VisualizationContext context;
@@ -57,7 +61,7 @@ public final class FireComponent implements EntityComponent {
 		TransformedInstance instance = context.instancerProvider()
 				.instancer(InstanceTypes.TRANSFORMED, model)
 				.createInstance();
-		instance.light(LightTexture.FULL_BLOCK);
+		instance.light(FULL_BLOCK_LIGHT);
 		instance.setChanged();
 		return instance;
 	}
@@ -95,7 +99,7 @@ public final class FireComponent implements EntityComponent {
 		stack.translate(entityX - renderOrigin.getX(), entityY - renderOrigin.getY(), entityZ - renderOrigin.getZ());
 		stack.scale(scale, scale, scale);
 		stack.mulPose(Axis.YP.rotationDegrees(-context.camera()
-				.getYRot()));
+				.yRot()));
 		stack.translate(0.0F, 0.0F, -0.3F + (float) ((int) maxHeight) * 0.02F);
 
 		for (int i = 0; y < maxHeight; ++i) {
@@ -155,7 +159,7 @@ public final class FireComponent implements EntityComponent {
 			vertexList.b(i, 1);
 			vertexList.u(i, u);
 			vertexList.v(i, v);
-			vertexList.light(i, LightTexture.FULL_BLOCK);
+			vertexList.light(i, FULL_BLOCK_LIGHT);
 			vertexList.normalX(i, 0);
 			vertexList.normalY(i, 1);
 			vertexList.normalZ(i, 0);

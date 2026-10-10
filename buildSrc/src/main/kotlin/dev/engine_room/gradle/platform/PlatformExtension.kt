@@ -1,6 +1,7 @@
 package dev.engine_room.gradle.platform
 
 import net.fabricmc.loom.api.LoomGradleExtensionAPI
+import dev.engine_room.gradle.jarset.JarTaskSet
 import net.fabricmc.loom.task.RemapJarTask
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -53,16 +54,21 @@ open class PlatformExtension(val project: Project) {
                 archiveClassifier = "testmod"
             }
 
-            val remapTestModJar = register<RemapJarTask>("remapTestModJar") {
-                dependsOn(testModJar)
-                inputFile.set(testModJar.get().archiveFile)
-                archiveClassifier = "testmod"
-                addNestedDependencies = false
-                classpath.from(sourceSet.compileClasspath)
-            }
-
-            named<Task>("build").configure {
-                dependsOn(remapTestModJar)
+            if (JarTaskSet.useRemapping(project)) {
+                val remapTestModJar = register<RemapJarTask>("remapTestModJar") {
+                    dependsOn(testModJar)
+                    inputFile.set(testModJar.get().archiveFile)
+                    archiveClassifier = "testmod"
+                    addNestedDependencies = false
+                    classpath.from(sourceSet.compileClasspath)
+                }
+                named<Task>("build").configure {
+                    dependsOn(remapTestModJar)
+                }
+            } else {
+                named<Task>("build").configure {
+                    dependsOn(testModJar)
+                }
             }
         }
     }

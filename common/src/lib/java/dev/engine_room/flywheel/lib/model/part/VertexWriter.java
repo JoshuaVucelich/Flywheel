@@ -22,6 +22,12 @@ class VertexWriter implements VertexConsumer {
 	}
 
 	@Override
+	public VertexConsumer setLineWidth(float width) {
+		// lines not used by part mesh baking
+		return this;
+	}
+
+	@Override
 	public VertexConsumer addVertex(float x, float y, float z) {
 		endLastVertex();
 		vertexCount++;
@@ -39,6 +45,12 @@ class VertexWriter implements VertexConsumer {
 		MemoryUtil.memPutFloat(ptr, x);
 		MemoryUtil.memPutFloat(ptr + 4, y);
 		MemoryUtil.memPutFloat(ptr + 8, z);
+		return this;
+	}
+
+	@Override
+	public VertexConsumer setColor(int color) {
+		// ignore color
 		return this;
 	}
 

@@ -20,8 +20,9 @@ import org.joml.Matrix3fc;
 import org.joml.Matrix4fc;
 import org.slf4j.Logger;
 
-import com.mojang.blaze3d.shaders.ProgramManager;
 import com.mojang.logging.LogUtils;
+
+import static org.lwjgl.opengl.GL20.glUseProgram;
 
 import dev.engine_room.flywheel.backend.gl.GlObject;
 import dev.engine_room.flywheel.backend.gl.GlTextureUnit;
@@ -38,11 +39,11 @@ public class GlProgram extends GlObject {
 	}
 
 	public void bind() {
-		ProgramManager.glUseProgram(handle());
+		glUseProgram(handle());
 	}
 
 	public static void unbind() {
-		ProgramManager.glUseProgram(0);
+		glUseProgram(0);
 	}
 
 	public void setFloat(String glslName, float value) {

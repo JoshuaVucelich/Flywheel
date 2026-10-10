@@ -99,16 +99,31 @@ open class SubprojectExtension(val project: Project) {
     private fun setupDependencies() {
         project.dependencies.apply {
             val minecraft_version: String by project
-            val parchment_minecraft_version: String by project
-            val parchment_version: String by project
-            val loom = project.the<LoomGradleExtensionAPI>()
 
             add("minecraft", "com.mojang:minecraft:${minecraft_version}")
 
-            add("mappings", loom.layered {
-                officialMojangMappings()
-                parchment("org.parchmentmc.data:parchment-${parchment_minecraft_version}:${parchment_version}@zip")
-            })
+            // Loom wires minecraft into `main` only; Flywheel uses many custom source sets.
+            if (project.findProperty("use_remapping")?.toString() == "false") {
+                project.afterEvaluate {
+                    val mc = project.configurations.findByName("minecraftNamedCompile") ?: return@afterEvaluate
+                    val sourceSets = project.the<JavaPluginExtension>().sourceSets
+                    listOf("api", "lib", "backend", "stubs", "vanillin").forEach { sourceSet ->
+                        if (sourceSets.findByName(sourceSet) != null) {
+                            project.configurations.getByName("${sourceSet}CompileClasspath").extendsFrom(mc)
+                        }
+                    }
+                }
+            }
+
+            val parchment_version: String by project
+            if (parchment_version != "none") {
+                val parchment_minecraft_version: String by project
+                val loom = project.the<LoomGradleExtensionAPI>()
+                add("mappings", loom.layered {
+                    officialMojangMappings()
+                    parchment("org.parchmentmc.data:parchment-${parchment_minecraft_version}:${parchment_version}@zip")
+                })
+            }
 
             add("api", "com.google.code.findbugs:jsr305:3.0.2")
         }

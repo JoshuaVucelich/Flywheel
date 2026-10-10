@@ -1,27 +1,28 @@
 package dev.engine_room.flywheel.backend.engine.uniform;
 
-import com.mojang.blaze3d.shaders.FogShape;
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.renderer.fog.FogData;
 
 public final class FogUniforms extends UniformWriter {
 	private static final int SIZE = 4 * 7;
 	static final UniformBuffer BUFFER = new UniformBuffer(Uniforms.FOG_INDEX, SIZE);
 
-	public static void update() {
+	public static void update(FogData fogData) {
+		if (fogData == null) {
+			return;
+		}
+
 		long ptr = BUFFER.ptr();
 
-		var color = RenderSystem.getShaderFogColor();
+		var color = fogData.color;
 
-		ptr = writeFloat(ptr, color[0]);
-		ptr = writeFloat(ptr, color[1]);
-		ptr = writeFloat(ptr, color[2]);
-		ptr = writeFloat(ptr, color[3]);
-		ptr = writeFloat(ptr, RenderSystem.getShaderFogStart());
-		ptr = writeFloat(ptr, RenderSystem.getShaderFogEnd());
-
-		var fogShape = RenderSystem.getShaderFogShape();
-		// Shouldn't ever be null, but we've seen crashes here.
-		ptr = writeInt(ptr, (fogShape == null ? FogShape.SPHERE : fogShape).getIndex());
+		ptr = writeFloat(ptr, color.x);
+		ptr = writeFloat(ptr, color.y);
+		ptr = writeFloat(ptr, color.z);
+		ptr = writeFloat(ptr, color.w);
+		ptr = writeFloat(ptr, fogData.environmentalStart);
+		ptr = writeFloat(ptr, fogData.environmentalEnd);
+		// FogShape was removed in 26.1; sphere (0) matches legacy default.
+		ptr = writeInt(ptr, 0);
 
 		BUFFER.markDirty();
 	}

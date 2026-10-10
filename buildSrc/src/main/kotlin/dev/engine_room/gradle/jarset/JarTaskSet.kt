@@ -13,6 +13,7 @@ import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceTask
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.jvm.tasks.Jar
@@ -27,8 +28,8 @@ class JarTaskSet(
     val jar: TaskProvider<Jar>,
     val sources: TaskProvider<Jar>,
     val javadocJar: TaskProvider<Jar>,
-    val remapJar: TaskProvider<RemapJarTask>,
-    val remapSources: TaskProvider<RemapSourcesJarTask>
+    val remapJar: TaskProvider<out Jar>,
+    val remapSources: TaskProvider<out Jar>
 ) {
 
     fun publishWithRawSources(action: Action<MavenPublication>): NamedDomainObjectProvider<MavenPublication> {
@@ -74,34 +75,27 @@ class JarTaskSet(
         project.artifacts.add(config.name, jar)
     }
 
-    /**
-     * Configure the assemble task to depend on the remap tasks and javadoc jar.
-     */
     fun addToAssemble() {
         project.tasks.named("assemble").configure {
             dependsOn(remapJar, remapSources, javadocJar)
         }
     }
 
-    /**
-     * Configure the remap tasks with the given action.
-     */
     fun configureRemap(action: Action<AbstractRemapJarTask>) {
-        remapJar.configure(action)
-        remapSources.configure(action)
+        if (!useRemapping(project)) return
+        remapJar.configure {
+            if (this is AbstractRemapJarTask) action.execute(this)
+        }
+        remapSources.configure {
+            if (this is AbstractRemapJarTask) action.execute(this)
+        }
     }
 
-    /**
-     * Configure the jar tasks with the given action.
-     */
     fun configureJar(action: Action<Jar>) {
         jar.configure(action)
         sources.configure(action)
     }
 
-    /**
-     * Create a new JarTaskSet with the same base jars but new tasks for remapping.
-     */
     fun forkRemap(newName: String): JarTaskSet {
         val remapJarTask = createRemapJar(project, newName, jar)
         val remapSourcesTask = createRemapSourcesJar(project, newName, sources)
@@ -116,19 +110,16 @@ class JarTaskSet(
         private const val JAVADOC_CLASSIFIER: String = "javadoc"
         private const val SOURCES_CLASSIFIER: String = "sources"
 
-        /**
-         * We have duplicate packages between the common and platform dependent subprojects.
-         * In theory the package-info.java files should be identical, so just take the first one we find.
-         */
+        fun useRemapping(project: Project): Boolean {
+            return project.findProperty("use_remapping")?.toString()?.toBoolean() ?: true
+        }
+
         fun excludeDuplicatePackageInfos(copyTask: AbstractCopyTask) {
             copyTask.filesMatching(PACKAGE_INFOS_JAVA_PATTERN) {
                 duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             }
         }
 
-        /**
-         * The compile/javadoc tasks have a different base type that isn't so smart about exclusion handling.
-         */
         fun excludeDuplicatePackageInfos(sourceTask: SourceTask) {
             sourceTask.exclude(PACKAGE_INFOS_JAVA_PATTERN)
         }
@@ -171,9 +162,6 @@ class JarTaskSet(
                 archiveClassifier.set(SOURCES_CLASSIFIER)
 
                 for (set in sourceSetSet) {
-                    // In the platform projects we inject common sources into these tasks to avoid polluting the
-                    // source set itself, but that bites us here, and we need to roll in all the sources in this kinda
-                    // ugly way. There's probably a better way to do this but JarTaskSet can't easily accommodate it.
                     from(project.tasks.named<ProcessResources>(set.processResourcesTaskName))
                     from(project.tasks.named<JavaCompile>(set.compileJavaTaskName).map { it.source.asFileTree })
                 }
@@ -191,7 +179,6 @@ class JarTaskSet(
                 setDestinationDir(project.layout.buildDirectory.dir("docs/${name}-javadoc").get().asFile)
 
                 for (set in sourceSetSet) {
-                    // See comment in #createSourcesJar.
                     source(project.tasks.named<JavaCompile>(set.compileJavaTaskName).map { it.source.asFileTree })
                     classpath += set.compileClasspath
                 }
@@ -211,7 +198,16 @@ class JarTaskSet(
             project: Project,
             name: String,
             jar: TaskProvider<Jar>
-        ): TaskProvider<RemapJarTask> {
+        ): TaskProvider<out Jar> {
+            if (!useRemapping(project)) {
+                return project.tasks.register<Jar>("${name}RemapJar") {
+                    dependsOn(jar)
+                    group = LOOM_GROUP
+                    destinationDirectory.set(project.layout.buildDirectory.dir("libs/${name}"))
+                    from(jar.map { project.zipTree(it.archiveFile) })
+                    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                }
+            }
             return project.tasks.register<RemapJarTask>("${name}RemapJar") {
                 dependsOn(jar)
                 group = LOOM_GROUP
@@ -225,7 +221,17 @@ class JarTaskSet(
             project: Project,
             name: String,
             jar: TaskProvider<Jar>
-        ): TaskProvider<RemapSourcesJarTask> {
+        ): TaskProvider<out Jar> {
+            if (!useRemapping(project)) {
+                return project.tasks.register<Jar>("${name}RemapSourcesJar") {
+                    dependsOn(jar)
+                    group = LOOM_GROUP
+                    destinationDirectory.set(project.layout.buildDirectory.dir("libs/${name}"))
+                    archiveClassifier.set(SOURCES_CLASSIFIER)
+                    from(jar.map { project.zipTree(it.archiveFile) })
+                    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                }
+            }
             return project.tasks.register<RemapSourcesJarTask>("${name}RemapSourcesJar") {
                 dependsOn(jar)
                 group = LOOM_GROUP

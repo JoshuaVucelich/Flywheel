@@ -1,6 +1,8 @@
 package dev.engine_room.flywheel.backend.gl;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import org.lwjgl.opengl.GL13;
+
+import com.mojang.blaze3d.opengl.GlStateManager;
 
 import dev.engine_room.flywheel.backend.gl.buffer.GlBufferType;
 
@@ -37,7 +39,7 @@ public class GlStateTracker {
 	}
 
 	public static State getRestoreState() {
-		return new State(BUFFERS.clone(), vao, program, GlStateManager._getActiveTexture());
+		return new State(BUFFERS.clone(), vao, program, GL13.glGetInteger(GL13.GL_ACTIVE_TEXTURE));
 	}
 
 	public static void bindVao(int vao) {

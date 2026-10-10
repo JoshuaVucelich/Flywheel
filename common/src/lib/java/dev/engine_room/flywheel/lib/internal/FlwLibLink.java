@@ -1,6 +1,6 @@
 package dev.engine_room.flywheel.lib.internal;
 
-import java.util.Deque;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ public interface FlwLibLink {
 
 	void compileModelPart(ModelPart part, PoseStack.Pose pose, VertexConsumer consumer, int light, int overlay, int color);
 
-	Deque<PoseStack.Pose> getPoseStack(PoseStack stack);
+	List<PoseStack.Pose> getPoseStack(PoseStack stack);
 
 	boolean isIrisLoaded();
 

@@ -1,49 +1,28 @@
 package dev.engine_room.flywheel.backend.engine;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-
 import dev.engine_room.flywheel.backend.Samplers;
+import dev.engine_room.flywheel.backend.gl.GpuTextureCompat;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class TextureBinder {
-	public static void bind(ResourceLocation resourceLocation) {
-		RenderSystem.bindTexture(byName(resourceLocation));
+	public static void bind(Identifier resourceLocation) {
+		GpuTextureCompat.bind(Minecraft.getInstance()
+				.getTextureManager()
+				.getTexture(resourceLocation));
 	}
 
 	public static void bindLightAndOverlay() {
 		var gameRenderer = Minecraft.getInstance().gameRenderer;
 
 		Samplers.OVERLAY.makeActive();
-		gameRenderer.overlayTexture()
-				.setupOverlayColor();
-		RenderSystem.bindTexture(RenderSystem.getShaderTexture(1));
+		GpuTextureCompat.bind(gameRenderer.overlayTexture().getTextureView());
 
 		Samplers.LIGHT.makeActive();
-		gameRenderer.lightTexture()
-				.turnOnLightLayer();
-		RenderSystem.bindTexture(RenderSystem.getShaderTexture(2));
+		GpuTextureCompat.bind(gameRenderer.lightmap());
 	}
 
 	public static void resetLightAndOverlay() {
-		var gameRenderer = Minecraft.getInstance().gameRenderer;
-
-		gameRenderer.overlayTexture()
-				.teardownOverlayColor();
-		gameRenderer.lightTexture()
-				.turnOffLightLayer();
-	}
-
-	/**
-	 * Get a built-in texture by its resource location.
-	 *
-	 * @param texture The texture's resource location.
-	 * @return The texture.
-	 */
-	public static int byName(ResourceLocation texture) {
-		return Minecraft.getInstance()
-				.getTextureManager()
-				.getTexture(texture)
-				.getId();
+		// Light and overlay bindings are managed by the vanilla render pipeline in 26.1.
 	}
 }
